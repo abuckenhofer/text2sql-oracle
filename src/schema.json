@@ -1,0 +1,50 @@
+{
+  "schema_name": "SALES",
+  "tables": [
+    {
+      "name": "CUSTOMERS",
+      "description": "Customer master data",
+      "columns": [
+        {"name": "CUSTOMER_ID", "type": "NUMBER", "description": "Primary key, auto-generated"},
+        {"name": "CUSTOMER_NAME", "type": "VARCHAR2(100)", "description": "Full customer name"},
+        {"name": "COUNTRY", "type": "VARCHAR2(50)", "description": "ISO country code (e.g. DE, US, GB)"},
+        {"name": "CREATED_DATE", "type": "DATE", "description": "Customer registration date"}
+      ]
+    },
+    {
+      "name": "ORDERS",
+      "description": "Sales orders placed by customers",
+      "columns": [
+        {"name": "ORDER_ID", "type": "NUMBER", "description": "Primary key, auto-generated"},
+        {"name": "CUSTOMER_ID", "type": "NUMBER", "description": "Foreign key to CUSTOMERS"},
+        {"name": "ORDER_DATE", "type": "DATE", "description": "Order placement date"}
+      ]
+    },
+    {
+      "name": "PRODUCTS",
+      "description": "Product catalog",
+      "columns": [
+        {"name": "PRODUCT_ID", "type": "NUMBER", "description": "Primary key, auto-generated"},
+        {"name": "PRODUCT_NAME", "type": "VARCHAR2(100)", "description": "Product display name"},
+        {"name": "CATEGORY", "type": "VARCHAR2(50)", "description": "Product category (e.g. Widgets, Gadgets)"},
+        {"name": "UNIT_PRICE", "type": "NUMBER(10,2)", "description": "List price in EUR"}
+      ]
+    },
+    {
+      "name": "ORDER_ITEMS",
+      "description": "Line items within an order",
+      "columns": [
+        {"name": "ITEM_ID", "type": "NUMBER", "description": "Primary key, auto-generated"},
+        {"name": "ORDER_ID", "type": "NUMBER", "description": "Foreign key to ORDERS"},
+        {"name": "PRODUCT_ID", "type": "NUMBER", "description": "Foreign key to PRODUCTS"},
+        {"name": "QUANTITY", "type": "NUMBER", "description": "Number of units ordered"},
+        {"name": "UNIT_PRICE", "type": "NUMBER(10,2)", "description": "Price per unit at time of order"}
+      ]
+    }
+  ],
+  "relationships": [
+    {"from": "ORDERS.CUSTOMER_ID", "to": "CUSTOMERS.CUSTOMER_ID", "type": "many-to-one"},
+    {"from": "ORDER_ITEMS.ORDER_ID", "to": "ORDERS.ORDER_ID", "type": "many-to-one"},
+    {"from": "ORDER_ITEMS.PRODUCT_ID", "to": "PRODUCTS.PRODUCT_ID", "type": "many-to-one"}
+  ]
+}
