@@ -10,6 +10,85 @@ Chapter 3 of *LLM-Powered SQL Generation in Oracle Databases*.
 | `src/ch3_3_self_hosted/` | Python middleware | Ollama (Llama 3.1) | Oracle Free container + Ollama |
 | `src/ch3_4_rag_vector/` | RAG + Vector Search | Ollama + sentence-transformers | Oracle Free container + Ollama |
 
+## Architecture Overview
+
+### 3.1 Select AI (Autonomous Database)
+
+```mermaid
+flowchart LR
+    U[User] -->|natural language| ADB[(Oracle ADB)]
+    ADB -->|SELECT AI| P[AI Profile<br/>DBMS_CLOUD_AI]
+    P -->|schema + question| LLM[Cloud LLM<br/>OpenAI / Cohere]
+    LLM -->|generated SQL| ADB
+    ADB -->|results| U
+    style ADB fill:#f96,stroke:#333
+    style LLM fill:#58f,stroke:#333
+```
+
+### 3.2 Python Middleware + Cloud LLM
+
+```mermaid
+flowchart LR
+    U[User] -->|question| PY[Python<br/>Middleware]
+    PY -->|schema.json<br/>+ question| LLM[OpenAI<br/>GPT-4]
+    LLM -->|generated SQL| PY
+    PY -->|EXPLAIN PLAN<br/>validation| ORA[(Oracle DB)]
+    PY -->|execute SQL| ORA
+    ORA -->|results| PY
+    PY -->|results| U
+    style PY fill:#3a3,stroke:#333,color:#fff
+    style LLM fill:#58f,stroke:#333
+    style ORA fill:#f96,stroke:#333
+```
+
+### 3.3 Python Middleware + Self-Hosted LLM
+
+```mermaid
+flowchart LR
+    U[User] -->|question| PY[Python<br/>Middleware]
+    PY -->|schema.json<br/>+ question| LLM[Ollama<br/>Llama 3.1]
+    LLM -->|generated SQL| PY
+    PY -->|EXPLAIN PLAN<br/>validation| ORA[(Oracle DB)]
+    PY -->|execute SQL| ORA
+    ORA -->|results| PY
+    PY -->|results| U
+    style PY fill:#3a3,stroke:#333,color:#fff
+    style LLM fill:#a5f,stroke:#333
+    style ORA fill:#f96,stroke:#333
+
+    subgraph Local Network
+        PY
+        LLM
+        ORA
+    end
+```
+
+### 3.4 RAG with Oracle AI Vector Search
+
+```mermaid
+flowchart LR
+    U[User] -->|question| PY[Python<br/>Middleware]
+
+    PY -->|embed question| EMB[sentence-transformers<br/>all-MiniLM-L6-v2]
+    EMB -->|question vector| PY
+
+    PY -->|VECTOR_DISTANCE<br/>similarity search| ORA[(Oracle DB<br/>VECTOR columns)]
+    ORA -->|top-K relevant<br/>table metadata| PY
+
+    PY -->|relevant schema<br/>+ question| LLM[Ollama<br/>Llama 3.1]
+    LLM -->|generated SQL| PY
+
+    PY -->|EXPLAIN PLAN<br/>validation| ORA
+    PY -->|execute SQL| ORA
+    ORA -->|results| PY
+    PY -->|results| U
+
+    style PY fill:#3a3,stroke:#333,color:#fff
+    style EMB fill:#fa0,stroke:#333
+    style LLM fill:#a5f,stroke:#333
+    style ORA fill:#f96,stroke:#333
+```
+
 ## Prerequisites
 
 - **Python 3.13+**
