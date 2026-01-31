@@ -69,16 +69,21 @@ flowchart LR
 flowchart LR
     U[User] -->|question| PY[Python<br/>Middleware]
 
-    PY -->|embed question| EMB[sentence-transformers<br/>all-MiniLM-L6-v2]
+    %% Offline / periodic indexing (build the vector store)
+    SCHEMA[Schema docs and metadata<br/>DDL comments joins sample queries] -->|embed schema chunks<br/>offline periodic| EMB[sentence-transformers<br/>all-MiniLM-L6-v2]
+    EMB -->|schema vectors| ORA[(Oracle DB<br/>VECTOR datatype and<br/>vector index)]
+
+    %% Online query flow
+    PY -->|embed question| EMB
     EMB -->|question vector| PY
 
-    PY -->|VECTOR_DISTANCE<br/>similarity search| ORA[(Oracle DB<br/>VECTOR columns)]
-    ORA -->|top-K relevant<br/>table metadata| PY
+    PY -->|VECTOR_DISTANCE<br/>similarity search| ORA
+    ORA -->|top K relevant chunks<br/>tables columns joins docs| PY
 
-    PY -->|relevant schema<br/>+ question| LLM[Ollama<br/>Llama 3.1]
+    PY -->|prompt question plus<br/>retrieved schema context| LLM[Ollama<br/>Llama 3.1]
     LLM -->|generated SQL| PY
 
-    PY -->|EXPLAIN PLAN<br/>validation| ORA
+    PY -->|EXPLAIN PLAN<br/>plus policy checks| ORA
     PY -->|execute SQL| ORA
     ORA -->|results| PY
     PY -->|results| U
@@ -87,6 +92,7 @@ flowchart LR
     style EMB fill:#fa0,stroke:#333
     style LLM fill:#a5f,stroke:#333
     style ORA fill:#f96,stroke:#333
+    style SCHEMA fill:#eef,stroke:#333
 ```
 
 ## Prerequisites
